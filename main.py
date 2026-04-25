@@ -1,11 +1,15 @@
+from fastapi import status
 from fastapi import FastAPI
+from models  import APIResponse
 
 app = FastAPI()
 
 
-@app.get("/")
+@app.get("/", status_code=status.HTTP_200_OK)
 def read_root():
-    return {"Hello": "World"}
+    return APIResponse(
+        data={"content": "Hello, world!"},
+    )
 
 
 @app.get("/items/{item_id}")
