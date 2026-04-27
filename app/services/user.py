@@ -1,18 +1,16 @@
-from passlib.context import CryptContext
+import bcrypt
 from sqlmodel import Session, select
 
-from app.models.user import User
+from app.models.tb_user import User
 from app.models.response import APIResponse, UserResponse
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    return bcrypt.checkpw(plain_password.encode("utf-8"), hashed_password.encode("utf-8"))
 
 
 def register(session: Session, name: str, password: str, email: str) -> APIResponse:
@@ -34,8 +32,8 @@ def register(session: Session, name: str, password: str, email: str) -> APIRespo
     )
 
 
-def login(session: Session, name: str, password: str) -> APIResponse:
-    statement = select(User).where(User.name == name)
+def login(session: Session, email: str, password: str) -> APIResponse:
+    statement = select(User).where(User.email == email)
     user = session.exec(statement).first()
     if user is None:
         return APIResponse(code=1, message="user not found")
