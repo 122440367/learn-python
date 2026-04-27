@@ -5,9 +5,11 @@ requires-python = ">=3.12"
 dependencies = [
     "cryptography>=47.0.0",
     "fastapi[standard]>=0.136.1",
+    "passlib[bcrypt]>=1.7.4",
     "pydantic>=2.13.3",
     "pymysql>=1.1.2",
     "python-dotenv>=1.2.2",
     "sqlmodel>=0.0.38",
     "status>=0.2.5",
+    "uvicorn>=0.46.0",
 ]
