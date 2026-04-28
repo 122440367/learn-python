@@ -21,7 +21,7 @@ def register(req: UserCreateRequest, session: Session = Depends(get_session)):
 
 @router.post("/login", status_code=status.HTTP_200_OK, response_model=APIResponse)
 def login(req: UserLoginRequest, session: Session = Depends(get_session)):
-    return user_service.login(session, req.name, req.password)
+    return user_service.login(session, req.email, req.password)
 
 
 @router.put("/password", status_code=status.HTTP_200_OK, response_model=APIResponse)
