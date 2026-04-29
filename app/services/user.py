@@ -1,8 +1,9 @@
 import bcrypt
-from sqlmodel import Session, select
+from sqlmodel import Session
 
 from app.models.tb_user import User
 from app.models.response import APIResponse, UserResponse
+from app.repositories import user as user_repo
 
 
 def hash_password(password: str) -> str:
@@ -14,27 +15,23 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 
 def register(session: Session, name: str, password: str, email: str) -> APIResponse:
-    statement = select(User).where(User.name == name)
-    existing = session.exec(statement).first()
+    existing = user_repo.get_by_email(session, email)
     if existing is not None:
-        return APIResponse(code=1, message="username already exists")
+        return APIResponse(code=1, message="email already registered")
 
     user = User(
         name=name,
         password=hash_password(password),
         email=email,
     )
-    session.add(user)
-    session.commit()
-    session.refresh(user)
+    user = user_repo.create(session, user)
     return APIResponse(
         data=UserResponse(name=user.name, email=user.email),
     )
 
 
 def login(session: Session, email: str, password: str) -> APIResponse:
-    statement = select(User).where(User.email == email)
-    user = session.exec(statement).first()
+    user = user_repo.get_by_email(session, email)
     if user is None:
         return APIResponse(code=1, message="user not found")
     if not verify_password(password, user.password):
@@ -45,43 +42,38 @@ def login(session: Session, email: str, password: str) -> APIResponse:
 
 
 def update_password(session: Session, user_id: int, old_password: str, new_password: str) -> APIResponse:
-    user = session.get(User, user_id)
+    user = user_repo.get_by_id(session, user_id)
     if user is None:
         return APIResponse(code=1919810, message="user not found")
     if not verify_password(old_password, user.password):
         return APIResponse(code=2, message="wrong password")
     user.password = hash_password(new_password)
-    session.add(user)
-    session.commit()
+    user_repo.update(session, user)
     return APIResponse(message="password updated")
 
 
 def update_name(session: Session, user_id: int, name: str) -> APIResponse:
-    user = session.get(User, user_id)
+    user = user_repo.get_by_id(session, user_id)
     if user is None:
         return APIResponse(code=1919810, message="user not found")
-    statement = select(User).where(User.name == name)
-    existing = session.exec(statement).first()
+    existing = user_repo.get_by_name(session, name)
     if existing is not None:
         return APIResponse(code=1, message="username already exists")
     user.name = name
-    session.add(user)
-    session.commit()
-    session.refresh(user)
+    user = user_repo.update(session, user)
     return APIResponse(data=UserResponse(name=user.name, email=user.email))
 
 
 def delete_user(session: Session, user_id: int) -> APIResponse:
-    user = session.get(User, user_id)
+    user = user_repo.get_by_id(session, user_id)
     if user is None:
         return APIResponse(code=1919810, message="user not found")
-    session.delete(user)
-    session.commit()
+    user_repo.delete(session, user)
     return APIResponse(message="user deleted")
 
 
 def read_user(session: Session, user_id: int) -> APIResponse:
-    user = session.get(User, user_id)
+    user = user_repo.get_by_id(session, user_id)
     if user is None:
         return APIResponse(code=1919810, message="user not found")
     return APIResponse(

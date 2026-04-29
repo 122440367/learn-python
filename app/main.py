@@ -5,7 +5,7 @@ from fastapi import FastAPI, status
 from app.core import create_db_and_tables
 from app.models.response import APIResponse
 from app.routers import user as user_router
-
+from app.routers import jmcomic as jmcomic_router
 
 @asynccontextmanager
 async def lifespan(app):
@@ -15,6 +15,7 @@ async def lifespan(app):
 app = FastAPI(lifespan=lifespan)
 
 app.include_router(user_router.router)
+app.include_router(jmcomic_router.router)
 
 
 @app.get("/", status_code=status.HTTP_200_OK)
