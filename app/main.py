@@ -5,7 +5,7 @@ from fastapi import FastAPI, status
 from app.core import create_db_and_tables
 from app.models.response import APIResponse
 from app.routers import user as user_router
-from app.routers import jmcomic as jmcomic_router
+from app.routers import comic as jmcomic_router
 
 @asynccontextmanager
 async def lifespan(app):

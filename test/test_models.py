@@ -7,7 +7,8 @@ from app.models.request import (
     PasswordUpdateRequest,
     UserUpdateRequest,
 )
-from app.models.response import APIResponse, UserResponse
+from app.models.response import APIResponse, UserResponse, PdfFileResponse
+from app.models.schemas import UserPublic
 from app.models.tb_user import User
 
 
@@ -100,3 +101,42 @@ class TestUserModel:
     def test_create_with_id(self):
         user = User(id=1, name="bob", password="hashed", email="b@b.com")
         assert user.id == 1
+
+
+class TestUserPublic:
+    """UserPublic DTO 模型测试。"""
+
+    def test_create(self):
+        user = UserPublic(id=1, name="alice", email="alice@test.com")
+        assert user.id == 1
+        assert user.name == "alice"
+        assert user.email == "alice@test.com"
+
+    def test_missing_field(self):
+        with pytest.raises(ValidationError):
+            UserPublic(id=1, name="alice")  # 缺少 email
+
+    def test_no_password_field(self):
+        """UserPublic 不应包含 password 字段。"""
+        user = UserPublic(id=1, name="alice", email="alice@test.com")
+        assert not hasattr(user, "password")
+
+
+class TestPdfFileResponse:
+    """PdfFileResponse 模型测试。"""
+
+    def test_media_type_is_pdf(self):
+        import tempfile
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tf:
+            tf.write(b"%PDF-1.4 test")
+            tf.flush()
+            resp = PdfFileResponse(tf.name, filename="test.pdf")
+            assert resp.media_type == "application/pdf"
+            assert resp.filename == "test.pdf"
+
+    def test_default_filename(self):
+        import tempfile
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tf:
+            tf.write(b"%PDF-1.4 test")
+            resp = PdfFileResponse(tf.name)
+            assert resp.media_type == "application/pdf"
