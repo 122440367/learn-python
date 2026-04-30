@@ -34,11 +34,11 @@ class TestRegister:
         assert resp.data.name == "alice"
         assert resp.data.email == "alice@example.com"
 
-    def test_register_duplicate_name(self, session):
+    def test_register_duplicate_email(self, session):
         user_service.register(session, "bob", "pass123", "bob@example.com")
-        resp = user_service.register(session, "bob", "pass456", "bob2@example.com")
+        resp = user_service.register(session, "bob2", "pass456", "bob@example.com")
         assert resp.code == 1
-        assert resp.message == "username already exists"
+        assert resp.message == "email already registered"
 
     def test_register_stores_hashed_password(self, session):
         user_service.register(session, "charlie", "mypass", "charlie@example.com")

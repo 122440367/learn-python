@@ -40,12 +40,12 @@ class TestRegisterEndpoint:
         assert data["code"] == 0
         assert data["data"]["name"] == "alice"
 
-    def test_register_duplicate(self, client):
+    def test_register_duplicate_email(self, client):
         client.post("/user/register", json={
             "name": "bob", "password": "pass", "email": "bob@test.com",
         })
         resp = client.post("/user/register", json={
-            "name": "bob", "password": "pass2", "email": "bob2@test.com",
+            "name": "bob2", "password": "pass2", "email": "bob@test.com",
         })
         assert resp.status_code == 201
         assert resp.json()["code"] == 1

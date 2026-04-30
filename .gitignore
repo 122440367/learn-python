@@ -32,3 +32,5 @@ Thumbs.db
 # uv
 .python-version
 uv.lock
+
+download/*.pdf
