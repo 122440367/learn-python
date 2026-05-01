@@ -1,26 +1,29 @@
 import pytest
 from sqlmodel import Session
 
+from sqlmodel import select as sqlmodel_select
+
 from app.models.tb_user import User
 from app.models.response import APIResponse
 from app.services import user as user_service
+from app.repositories import user as user_repo
 
 
 class TestPasswordHashing:
     """密码哈希与验证测试。"""
 
     def test_hash_password_returns_hash(self):
-        hashed = user_service.hash_password("secret123")
+        hashed = user_repo.hash_password("secret123")
         assert isinstance(hashed, str)
         assert hashed != "secret123"
 
     def test_verify_password_correct(self):
-        hashed = user_service.hash_password("secret123")
-        assert user_service.verify_password("secret123", hashed) is True
+        hashed = user_repo.hash_password("secret123")
+        assert user_repo.verify_password("secret123", hashed) is True
 
     def test_verify_password_wrong(self):
-        hashed = user_service.hash_password("secret123")
-        assert user_service.verify_password("wrong_password", hashed) is False
+        hashed = user_repo.hash_password("secret123")
+        assert user_repo.verify_password("wrong_password", hashed) is False
 
 
 class TestRegister:
@@ -43,11 +46,11 @@ class TestRegister:
     def test_register_stores_hashed_password(self, session):
         user_service.register(session, "charlie", "mypass", "charlie@example.com")
         user = session.exec(
-            __import__("sqlmodel").select(User).where(User.name == "charlie")
+            sqlmodel_select(User).where(User.name == "charlie")
         ).first()
         assert user is not None
         assert user.password != "mypass"
-        assert user_service.verify_password("mypass", user.password)
+        assert user_repo.verify_password("mypass", user.password)
 
 
 class TestLogin:
@@ -78,7 +81,7 @@ class TestReadUser:
     def test_read_user_success(self, session):
         user_service.register(session, "frank", "pass123", "frank@example.com")
         user = session.exec(
-            __import__("sqlmodel").select(User).where(User.name == "frank")
+            sqlmodel_select(User).where(User.name == "frank")
         ).first()
         resp = user_service.read_user(session, user.id)
         assert resp.code == 0
@@ -97,7 +100,7 @@ class TestUpdatePassword:
     def test_update_password_success(self, session):
         user_service.register(session, "grace", "oldpass", "grace@example.com")
         user = session.exec(
-            __import__("sqlmodel").select(User).where(User.name == "grace")
+            sqlmodel_select(User).where(User.name == "grace")
         ).first()
         resp = user_service.update_password(session, user.id, "oldpass", "newpass")
         assert resp.code == 0
@@ -114,7 +117,7 @@ class TestUpdatePassword:
     def test_update_password_wrong_old_password(self, session):
         user_service.register(session, "heidi", "pass123", "heidi@example.com")
         user = session.exec(
-            __import__("sqlmodel").select(User).where(User.name == "heidi")
+            sqlmodel_select(User).where(User.name == "heidi")
         ).first()
         resp = user_service.update_password(session, user.id, "wrong", "newpass")
         assert resp.code == 2
@@ -127,7 +130,7 @@ class TestUpdateName:
     def test_update_name_success(self, session):
         user_service.register(session, "ivan", "pass123", "ivan@example.com")
         user = session.exec(
-            __import__("sqlmodel").select(User).where(User.name == "ivan")
+            sqlmodel_select(User).where(User.name == "ivan")
         ).first()
         resp = user_service.update_name(session, user.id, "ivan_new")
         assert resp.code == 0
@@ -142,7 +145,7 @@ class TestUpdateName:
         user_service.register(session, "judy", "pass123", "judy@example.com")
         user_service.register(session, "karl", "pass456", "karl@example.com")
         user_judy = session.exec(
-            __import__("sqlmodel").select(User).where(User.name == "judy")
+            sqlmodel_select(User).where(User.name == "judy")
         ).first()
         resp = user_service.update_name(session, user_judy.id, "karl")
         assert resp.code == 1
@@ -155,7 +158,7 @@ class TestDeleteUser:
     def test_delete_user_success(self, session):
         user_service.register(session, "mallory", "pass123", "mallory@example.com")
         user = session.exec(
-            __import__("sqlmodel").select(User).where(User.name == "mallory")
+            sqlmodel_select(User).where(User.name == "mallory")
         ).first()
         resp = user_service.delete_user(session, user.id)
         assert resp.code == 0
