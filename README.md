@@ -1,3 +1,0 @@
-### 学习python之路，由此开始......
-
-准备FastAPI + SQLModel +SQLAlchemy（以后再说）
