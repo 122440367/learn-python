@@ -32,7 +32,10 @@ print(str(num) + "转换成为字符串") # 将整数转换为字符串并拼接
 
 # 字符串的格式化
 name = "Alice"
+name2 = "Eric"
 print("My name is %s." % name)  # 使用 %s 占位符格式化字符串
+print("My name is %s,and his name is %s." % (name,name2))
+
 # 使用 f"内容{变量}" 进行格式化
 print(f"My name is {name}.") # 使用 f-string 格式化字符串
 
